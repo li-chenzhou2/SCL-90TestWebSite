@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCL-90心理健康测试</title>
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <!-- 统一的 Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#8B5CF6',
+                        light: '#EFF6FF',
+                        dark: '#1F2937',
+                        'primary-light': '#93C5FD',
+                        'secondary-light': '#A7F3D0',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.5s ease-in-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .bg-gradient-custom {
+                background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+            }
+            .card-shadow {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .transition-custom {
+                transition: all 0.3s ease;
+            }
+            .btn-hover:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+            }
+            .option-hover:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            }
+        }
+    </style>
+    <style>
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: #f8fafc;
+        }
+        .progress-bar {
+            height: 8px;
+            background-color: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #3B82F6;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        .option-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .option-card.selected {
+            border-color: #3B82F6;
+            background-color: #EFF6FF;
+        }
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .section.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        .result-card {
+            transition: all 0.3s ease;
+        }
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .result-level {
+            font-weight: 600;
+        }
+        .result-level.low {
+            color: #10B981;
+        }
+        .result-level.medium {
+            color: #F59E0B;
+        }
+        .result-level.high {
+            color: #EF4444;
+        }
+        .recommendation-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        .recommendation-item i {
+            margin-right: 0.75rem;
+            color: #3B82F6;
+            margin-top: 0.25rem;
+        }
+        .bg-pattern {
+            background-image: url('https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/3e6a96bc64b54ea5b1c39a435421352f~tplv-a9rns2rl98-image.image?rcl=2025110323345049643D886E10ED51451D&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1764776127&x-signature=upfIWlTxo6ya%2BN2vxkkW%2FcTwI9Y%3D');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex flex-col">
+        <!-- 顶部导航 -->
+        <header class="bg-white shadow-sm">
+            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+                <div class="flex items-center">
+                    <i class="fa fa-heart-o text-primary text-2xl mr-2"></i>
+                    <h1 class="text-xl font-bold text-gray-800">心理健康测评</h1>
+                </div>
+                <div id="date-display" class="text-sm text-gray-500"></div>
+            </div>
+        </header>
+
+        <!-- 主内容区 -->
+        <main class="flex-grow container mx-auto px-4 py-8">
+            <!-- 欢迎页 -->
+            <section id="welcome-section" class="section active">
+                <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="bg-pattern h-48"></div>
+                    <div class="p-8">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">SCL-90症状自评量表</h2>
+                        <p class="text-gray-600 mb-6">
+                            SCL-90是目前国内外最常用的心理健康测量工具之一，包含90个项目，涵盖了广泛的精神症状学内容，从感觉、情感、思维、意识、行为直至生活习惯、人际关系、饮食睡眠等方面，全面评估个体的心理状况。
+                        </p>
+                        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fa fa-info-circle text-blue-500"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-blue-700">
+                                        测试说明：本测试共90题，预计耗时15-20分钟。请根据您过去一周内的实际感受进行选择，答案没有对错之分。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="text-sm text-gray-500">
+                                <i class="fa fa-lock mr-1"></i> 数据仅存储在本地，保护您的隐私
+                            </div>
+                            <button id="start-test-btn" class="bg-primary hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-lg transition-custom btn-hover">
+                                开始测试
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 测试说明页 -->
+            <section id="instructions-section" class="section">
+                <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-md p-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">测试说明</h2>
+                    
+                    <div class="space-y-4 mb-8">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-500">
+                                <span class="text-sm font-medium">1</span>
+                            </div>
+                            <p class="ml-3 text-gray-600">
+                                本测试包含90个问题，涉及您最近一周内的感受和体验。
+                            </p>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-500">
+                                <span class="text-sm font-medium">2</span>
+                            </div>
+                            <p class="ml-3 text-gray-600">
+                                每个问题有五个选项：没有、很轻、中度、偏重、严重，分别对应1-5分。
+                            </p>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-500">
+                                <span class="text-sm font-medium">3</span>
+                            </div>
+                            <p class="ml-3 text-gray-600">
+                                请根据您的真实感受选择最适合的选项，不要遗漏任何问题。
+                            </p>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-500">
+                                <span class="text-sm font-medium">4</span>
+                            </div>
+                            <p class="ml-3 text-gray-600">
+                                选择完成后，系统将自动计算您的得分并生成详细的测试报告。
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fa fa-exclamation-triangle text-yellow-500"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-yellow-700">
+                                    重要提示：本测试仅供趣味参考，不具备医疗诊断功能。测试结果不能替代专业医生的诊断和建议。如果您有严重的心理困扰，请及时寻求专业心理咨询或治疗。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end">
+                        <button id="start-test-from-instructions-btn" class="bg-primary hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-lg transition-custom btn-hover">
+                            我已了解，开始测试
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 测试题页面 -->
+            <section id="test-section" class="section">
+                <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-md p-8">
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="text-sm text-gray-500">问题 <span id="current-question-number">1</span>/90</div>
+                            <div class="text-sm text-gray-500">进度</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div id="progress-bar-fill" class="progress-bar-fill" style="width: 1.11%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="question-container">
+                        <h3 id="question-text" class="text-xl font-medium text-gray-800 mb-6">1. 头痛</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="option-card border border-gray-200 rounded-lg p-4 hover:border-primary option-hover" data-score="1">
+                                <div class="flex items-center">
+                                    <div class="h-6 w-6 rounded-full border border-gray-300 flex items-center justify-center mr-3">
+                                        <div class="option-indicator hidden h-3 w-3 rounded-full bg-primary"></div>
+                                    </div>
+                                    <span class="option-text">没有</span>
+                                </div>
+                            </div>
+                            <div class="option-card border border-gray-200 rounded-lg p-4 hover:border-primary option-hover" data-score="2">
+                                <div class="flex items-center">
+                                    <div class="h-6 w-6 rounded-full border border-gray-300 flex items-center justify-center mr-3">
+                                        <div class="option-indicator hidden h-3 w-3 rounded-full bg-primary"></div>
+                                    </div>
+                                    <span class="option-text">很轻</span>
+                                </div>
+                            </div>
+                            <div class="option-card border border-gray-200 rounded-lg p-4 hover:border-primary option-hover" data-score="3">
+                                <div class="flex items-center">
+                                    <div class="h-6 w-6 rounded-full border border-gray-300 flex items-center justify-center mr-3">
+                                        <div class="option-indicator hidden h-3 w-3 rounded-full bg-primary"></div>
+                                    </div>
+                                    <span class="option-text">中度</span>
+                                </div>
+                            </div>
+                            <div class="option-card border border-gray-200 rounded-lg p-4 hover:border-primary option-hover" data-score="4">
+                                <div class="flex items-center">
+                                    <div class="h-6 w-6 rounded-full border border-gray-300 flex items-center justify-center mr-3">
+                                        <div class="option-indicator hidden h-3 w-3 rounded-full bg-primary"></div>
+                                    </div>
+                                    <span class="option-text">偏重</span>
+                                </div>
+                            </div>
+                            <div class="option-card border border-gray-200 rounded-lg p-4 hover:border-primary option-hover" data-score="5">
+                                <div class="flex items-center">
+                                    <div class="h-6 w-6 rounded-full border border-gray-300 flex items-center justify-center mr-3">
+                                        <div class="option-indicator hidden h-3 w-3 rounded-full bg-primary"></div>
+                                    </div>
+                                    <span class="option-text">严重</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 结果生成页面 -->
+            <section id="result-loading-section" class="section">
+                <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-md p-8 text-center">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">正在生成您的测试报告</h2>
+                    
+                    <div class="flex justify-center mb-6">
+                        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary"></div>
+                    </div>
+                    
+                    <p class="text-gray-600">
+                        我们正在分析您的测试结果，请稍候...
+                    </p>
+                </div>
+            </section>
+
+            <!-- 结果报告页面 -->
+            <section id="result-section" class="section">
+                <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 text-white">
+                        <h2 class="text-2xl font-bold mb-2">SCL-90心理健康测试报告</h2>
+                        <p class="text-blue-100">测试日期: <span id="result-date"></span></p>
+                    </div>
+                    
+                    <div class="p-8">
+                        <!-- 总体评估 -->
+                        <div class="mb-10">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                                <i class="fa fa-line-chart text-primary mr-2"></i>
+                                总体评估
+                            </h3>
+                            
+                            <div class="bg-gray-50 rounded-lg p-6">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <div class="mb-4">
+                                            <div class="flex justify-between mb-1">
+                                                <span class="text-sm font-medium text-gray-600">总分</span>
+                                                <span id="total-score" class="text-sm font-medium text-gray-800">120</span>
+                                            </div>
+                                            <div class="progress-bar">
+                                                <div id="total-score-bar" class="progress-bar-fill bg-blue-500" style="width: 26.67%;"></div>
+                                            </div>
+                                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                                <span>90</span>
+                                                <span>270</span>
+                                                <span>450</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            <div class="flex justify-between mb-1">
+                                                <span class="text-sm font-medium text-gray-600">总均分</span>
+                                                <span id="average-score" class="text-sm font-medium text-gray-800">1.33</span>
+                                            </div>
+                                            <div class="progress-bar">
+                                                <div id="average-score-bar" class="progress-bar-fill bg-green-500" style="width: 16.67%;"></div>
+                                            </div>
+                                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                                <span>1</span>
+                                                <span>3</span>
+                                                <span>5</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <div class="mb-4">
+                                            <div class="flex justify-between mb-1">
+                                                <span class="text-sm font-medium text-gray-600">阳性项目数</span>
+                                                <span id="positive-items" class="text-sm font-medium text-gray-800">20</span>
+                                            </div>
+                                            <div class="progress-bar">
+                                                <div id="positive-items-bar" class="progress-bar-fill bg-yellow-500" style="width: 22.22%;"></div>
+                                            </div>
+                                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                                <span>0</span>
+                                                <span>45</span>
+                                                <span>90</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <div class="flex justify-between mb-1">
+                                                <span class="text-sm font-medium text-gray-600">阳性症状均分</span>
+                                                <span id="positive-average" class="text-sm font-medium text-gray-800">1.80</span>
+                                            </div>
+                                            <div class="progress-bar">
+                                                <div id="positive-average-bar" class="progress-bar-fill bg-purple-500" style="width: 20%;"></div>
+                                            </div>
+                                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                                <span>1</span>
+                                                <span>3</span>
+                                                <span>5</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-6">
+                                    <h4 class="text-sm font-medium text-gray-700 mb-2">总体评价</h4>
+                                    <p id="overall-assessment" class="text-gray-600">
+                                        您的总体心理健康状况良好，各项指标均在正常范围内。您可能偶尔会有一些轻微的心理压力或不适感，但这些都在可自我调节的范围内。建议您继续保持积极的生活态度和良好的生活习惯。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 因子分雷达图 -->
+                        <div class="mb-10">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                                <i class="fa fa-pie-chart text-primary mr-2"></i>
+                                因子分分析
+                            </h3>
+                            
+                            <div class="bg-gray-50 rounded-lg p-6">
+                                <div class="chart-container">
+                                    <canvas id="radar-chart"></canvas>
+                                </div>
+                                
+                                <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                    <div class="flex items-center">
+                                        <div class="h-3 w-3 rounded-full bg-blue-500 mr-2"></div>
+                                        <span class="text-xs text-gray-600">躯体化</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="h-3 w-3 rounded-full bg-green-500 mr-2"></div>
+                                        <span class="text-xs text-gray-600">强迫症状</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="h-3 w-3 rounded-full bg-yellow-500 mr-2"></div>
+                                        <span class="text-xs text-gray-600">人际关系敏感</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="h-3 w-3 rounded-full bg-red-500 mr-2"></div>
+                                        <span class="text-xs text-gray-600">抑郁</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="h-3 w-3 rounded-full bg-purple-500 mr-2"></div>
+                                        <span class="text-xs text-gray-600">焦虑</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="h-3 w-3 rounded-full bg-pink-500 mr-2"></div>
+                                        <span class="text-xs text-gray-600">敌对</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="h-3 w-3 rounded-full bg-indigo-500 mr-2"></div>
+                                        <span class="text-xs text-gray-600">恐怖</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="h-3 w-3 rounded-full bg-teal-500 mr-2"></div>
+                                        <span class="text-xs text-gray-600">偏执</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="h-3 w-3 rounded-full bg-orange-500 mr-2"></div>
+                                        <span class="text-xs text-gray-600">精神病性</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 因子分详细解释 -->
+                        <div class="mb-10">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                                <i class="fa fa-list-alt text-primary mr-2"></i>
+                                因子分详细解释
+                            </h3>
+                            
+                            <div id="factor-details" class="space-y-6">
+                                <!-- 因子分详细解释将通过JavaScript动态生成 -->
+                            </div>
+                        </div>
+                        
+                        <!-- 建议 -->
+                        <div class="mb-10">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                                <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                                个性化建议
+                            </h3>
+                            
+                            <div class="bg-gray-50 rounded-lg p-6">
+                                <div id="recommendations" class="space-y-4">
+                                    <!-- 建议将通过JavaScript动态生成 -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 重要声明 -->
+                        <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fa fa-exclamation-triangle text-yellow-500"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-yellow-800">重要声明</h3>
+                                    <div class="mt-2 text-sm text-yellow-700">
+                                        <p class="mb-2">1. 本测试仅供趣味参考，不具备医疗诊断功能。</p>
+                                        <p class="mb-2">2. 测试结果不能替代专业医生的诊断和建议。</p>
+                                        <p class="mb-2">3. 如果您有严重的心理困扰，请及时寻求专业心理咨询或治疗。</p>
+                                        <p>4. 本测试的最终解释权归测试提供方所有。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 操作按钮 -->
+                        <div class="mt-8 flex justify-between">
+                            <button id="share-result-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-6 rounded-lg transition-custom btn-hover">
+                                <i class="fa fa-share-alt mr-2"></i> 分享结果
+                            </button>
+                            <button id="restart-test-btn" class="bg-primary hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-lg transition-custom btn-hover">
+                                <i class="fa fa-refresh mr-2"></i> 重新测试
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 链接过期页面 -->
+            <section id="link-expired-section" class="section">
+                <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-md p-8 text-center">
+                    <div class="mb-6">
+                        <i class="fa fa-exclamation-circle text-red-500 text-5xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">链接已过期</h2>
+                    <p class="text-gray-600 mb-6">
+                        您访问的测试链接已过期。本测试链接每天更新一次，旧链接仅可查看历史测试结果，不可进行新测试。
+                    </p>
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+                        <p class="text-sm text-blue-700">
+                            如您需要进行新的测试，请联系卖家获取今日最新测试链接。
+                        </p>
+                    </div>
+                    <button id="view-history-results-btn" class="bg-primary hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-lg transition-custom btn-hover">
+                        查看历史测试结果
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="bg-white border-t border-gray-200 py-6">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="text-sm text-gray-500 mb-4 md:mb-0">
+                        © 2025 心理健康测评 | SCL-90症状自评量表
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        <p>本网页内容仅供参考，不构成任何医疗建议</p>
+                        <p class="mt-1">SCL-90量表版权归原作者所有</p>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-100 text-center text-xs text-gray-500">
+                    <p>© 2025 版权所有</p>
+                    <p class="mt-1">使用说明：本测试仅供个人使用，禁止用于商业用途</p>
+                    <p class="mt-1">隐私说明：所有测试数据仅存储在您的本地设备中</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // SCL-90测试题库
+        const questions = [
+            // 躯体化
+            { id: 1, text: "头痛", factor: "somatization" },
+            { id: 2, text: "神经过敏，心中不踏实", factor: "somatization" },
+            { id: 3, text: "头脑中有不必要的想法或字句盘旋", factor: "obsessive_compulsive" },
+            { id: 4, text: "头晕或晕倒", factor: "somatization" },
+            { id: 5, text: "对异性的兴趣减退", factor: "depression" },
+            { id: 6, text: "对旁人责备求全", factor: "interpersonal_sensitivity" },
+            { id: 7, text: "感到别人能控制您的思想", factor: "paranoid_ideation" },
+            { id: 8, text: "责怪别人制造麻烦", factor: "hostility" },
+            { id: 9, text: "忘记性大", factor: "obsessive_compulsive" },
+            { id: 10, text: "担心自己的衣饰整齐及仪态的端正", factor: "obsessive_compulsive" },
+            { id: 11, text: "容易烦恼和激动", factor: "anxiety" },
+            { id: 12, text: "胸痛", factor: "somatization" },
+            { id: 13, text: "害怕空旷的场所或街道", factor: "phobic_anxiety" },
+            { id: 14, text: "感到自己的精力下降，活动减慢", factor: "depression" },
+            { id: 15, text: "想结束自己的生命", factor: "depression" },
+            { id: 16, text: "听到旁人听不到的声音", factor: "psychoticism" },
+            { id: 17, text: "发抖", factor: "anxiety" },
+            { id: 18, text: "感到大多数人都不可信任", factor: "paranoid_ideation" },
+            { id: 19, text: "胃口不好", factor: "somatization" },
+            { id: 20, text: "容易哭泣", factor: "depression" },
+            // 强迫症状
+            { id: 21, text: "同异性相处时感到害羞不自在", factor: "interpersonal_sensitivity" },
+            { id: 22, text: "感到受骗，中了圈套或有人想抓住您", factor: "paranoid_ideation" },
+            { id: 23, text: "无缘无故地突然感到害怕", factor: "anxiety" },
+            { id: 24, text: "自己不能控制地大发脾气", factor: "hostility" },
+            { id: 25, text: "怕单独出门", factor: "phobic_anxiety" },
+            { id: 26, text: "经常责怪自己", factor: "depression" },
+            { id: 27, text: "腰痛", factor: "somatization" },
+            { id: 28, text: "感到难以完成任务", factor: "depression" },
+            { id: 29, text: "感到孤独", factor: "depression" },
+            { id: 30, text: "感到苦闷", factor: "depression" },
+            { id: 31, text: "过分担忧", factor: "anxiety" },
+            { id: 32, text: "对事物不感兴趣", factor: "depression" },
+            { id: 33, text: "感到害怕", factor: "anxiety" },
+            { id: 34, text: "您的感情容易受到伤害", factor: "interpersonal_sensitivity" },
+            { id: 35, text: "旁人能知道您的私下想法", factor: "psychoticism" },
+            { id: 36, text: "感到别人不理解您、不同情您", factor: "interpersonal_sensitivity" },
+            { id: 37, text: "感到人们对您不友好，不喜欢您", factor: "interpersonal_sensitivity" },
+            { id: 38, text: "做事必须做得很慢以保证做得正确", factor: "obsessive_compulsive" },
+            { id: 39, text: "心跳得很厉害", factor: "somatization" },
+            { id: 40, text: "恶心或胃部不舒服", factor: "somatization" },
+            // 人际关系敏感
+            { id: 41, text: "感到比不上他人", factor: "interpersonal_sensitivity" },
+            { id: 42, text: "肌肉酸痛", factor: "somatization" },
+            { id: 43, text: "感到有人在监视您、谈论您", factor: "paranoid_ideation" },
+            { id: 44, text: "难以入睡", factor: "depression" },
+            { id: 45, text: "做事必须反复检查", factor: "obsessive_compulsive" },
+            { id: 46, text: "难以做出决定", factor: "obsessive_compulsive" },
+            { id: 47, text: "怕乘电车、公共汽车、地铁或火车", factor: "phobic_anxiety" },
+            { id: 48, text: "呼吸有困难", factor: "somatization" },
+            { id: 49, text: "一阵阵发冷或发热", factor: "somatization" },
+            { id: 50, text: "因为感到害怕而避开某些东西、场合或活动", factor: "phobic_anxiety" },
+            { id: 51, text: "脑子变空了", factor: "depression" },
+            { id: 52, text: "身体发麻或刺痛", factor: "somatization" },
+            { id: 53, text: "喉咙有梗塞感", factor: "somatization" },
+            { id: 54, text: "感到前途没有希望", factor: "depression" },
+            { id: 55, text: "不能集中注意力", factor: "obsessive_compulsive" },
+            { id: 56, text: "感到身体的某一部分软弱无力", factor: "somatization" },
+            { id: 57, text: "感到紧张或容易紧张", factor: "anxiety" },
+            { id: 58, text: "感到手或脚发重", factor: "somatization" },
+            { id: 59, text: "想到死亡的事", factor: "depression" },
+            { id: 60, text: "吃得太多", factor: "depression" },
+            // 抑郁
+            { id: 61, text: "当别人看着您或谈论您时感到不自在", factor: "interpersonal_sensitivity" },
+            { id: 62, text: "有一些不属于您自己的想法", factor: "psychoticism" },
+            { id: 63, text: "有想打人或伤害他人的冲动", factor: "hostility" },
+            { id: 64, text: "醒得太早", factor: "depression" },
+            { id: 65, text: "必须反复洗手、点数目或触摸某些东西", factor: "obsessive_compulsive" },
+            { id: 66, text: "睡得不稳不深", factor: "depression" },
+            { id: 67, text: "有想摔坏或破坏东西的冲动", factor: "hostility" },
+            { id: 68, text: "有一些别人没有的想法或念头", factor: "psychoticism" },
+            { id: 69, text: "感到对别人神经过敏", factor: "interpersonal_sensitivity" },
+            { id: 70, text: "在商店或电影院等人多的地方感到不自在", factor: "phobic_anxiety" },
+            { id: 71, text: "感到任何事情都很困难", factor: "depression" },
+            { id: 72, text: "一阵阵恐惧或惊恐", factor: "anxiety" },
+            { id: 73, text: "感到在公共场合吃东西很不舒服", factor: "phobic_anxiety" },
+            { id: 74, text: "经常与人争论", factor: "hostility" },
+            { id: 75, text: "单独一人时神经很紧张", factor: "phobic_anxiety" },
+            { id: 76, text: "别人对您的成绩没有做出恰当的评价", factor: "interpersonal_sensitivity" },
+            { id: 77, text: "即使和别人在一起也感到孤单", factor: "depression" },
+            { id: 78, text: "感到坐立不安心神不宁", factor: "anxiety" },
+            { id: 79, text: "感到自己没有什么价值", factor: "depression" },
+            { id: 80, text: "感到熟悉的东西变成陌生或不像是真的", factor: "psychoticism" },
+            // 焦虑
+            { id: 81, text: "大叫或摔东西", factor: "hostility" },
+            { id: 82, text: "害怕会在公共场合晕倒", factor: "phobic_anxiety" },
+            { id: 83, text: "感到别人想占您的便宜", factor: "paranoid_ideation" },
+            { id: 84, text: "为一些有关性的想法而很苦恼", factor: "obsessive_compulsive" },
+            { id: 85, text: "您认为应该因为自己的过错而受到惩罚", factor: "depression" },
+            { id: 86, text: "感到要很快把事情做完", factor: "anxiety" },
+            { id: 87, text: "感到自己的身体有严重问题", factor: "somatization" },
+            { id: 88, text: "从未感到和其他人很亲近", factor: "interpersonal_sensitivity" },
+            { id: 89, text: "感到自己有罪", factor: "depression" },
+            { id: 90, text: "感到自己的脑子有毛病", factor: "psychoticism" }
+        ];
+
+        // 因子分解释
+        const factorExplanations = {
+            somatization: {
+                name: "躯体化",
+                description: "主要反映身体不适感，包括心血管、胃肠道、呼吸和其他系统的不适，和头痛、背痛、肌肉酸痛，以及焦虑的其他躯体表现。",
+                low: "您在躯体化方面的得分较低，表明您身体上的不适感较少，能够较好地保持身体健康。",
+                medium: "您在躯体化方面的得分处于中等水平，可能偶尔会有一些身体上的不适感，如头痛、肌肉酸痛等，但这些症状通常不会对您的日常生活造成明显影响。",
+                high: "您在躯体化方面的得分较高，可能经常会感到身体不适，如头痛、胃痛、心慌等。这些症状可能与心理压力有关，建议您关注自己的心理健康健康，学习一些自我调节的方法。"
+            },
+            obsessive_compulsive: {
+                name: "强迫症状",
+                description: "主要指那些明知没有必要，但又无法摆脱的无意义的思想、冲动和行为，还有一些比较一般的认知障碍的行为征象也在这一因子中反映。",
+                low: "您在强迫症状方面的得分较低，表明您思维灵活，行为自然，很少有不必要的重复想法或行为。",
+                medium: "您在强迫症状方面的得分处于中等水平，可能偶尔会有一些重复的想法或行为，如反复检查门窗是否关好等，但这些通常不会对您的生活造成明显困扰。",
+                high: "您在强迫症状方面的得分较高，可能会出现一些不必要的重复想法或行为，如反复洗手、检查、计数等。这些症状可能会占用您的时间和精力，影响您的日常生活和工作。建议您尝试一些放松技巧，学习与这些想法和平共处的方法。"
+            },
+            interpersonal_sensitivity: {
+                name: "人际关系敏感",
+                description: "主要是指某些个人不自在与自卑感，特别是与其他人相比较时更加突出。在人际交往中的自卑感，心神不安，明显不自在，以及人际交流中的不良自我暗示，消极的期待等是这方面症状的典型原因。",
+                low: "您在人际关系敏感方面的得分较低，表明您在人际交往中感到自在和自信，能够与他人建立良好的关系。",
+                medium: "您在人际关系敏感方面的得分处于中等水平，可能在某些社交场合会感到一些不自在或紧张，但总体来说能够较好地处理人际关系。",
+                high: "您在人际关系敏感方面的得分较高，可能会感到在人际交往中不自在、自卑或紧张。您可能对别人的评价比较敏感，容易受到伤害。建议您尝试提高自我认知，增强自信心，学习一些人际交往技巧。"
+            },
+            depression: {
+                name: "抑郁",
+                description: "苦闷的情感与心境为代表性症状，还以生活兴趣的减退，动力缺乏，活力丧失等为特征。还表现出失望、悲观以及与抑郁相联系的认知和躯体方面的感受，另外，还包括有关死亡的思想和自杀观念。",
+                low: "您在抑郁方面的得分较低，表明您情绪状态良好，对生活充满兴趣和希望，能够积极面对生活中的挑战。",
+                medium: "您在抑郁方面的得分处于中等水平，可能偶尔会感到情绪低落或兴趣减退，但这些情绪通常是暂时的，不会对您的日常生活造成严重影响。",
+                high: "您在抑郁方面的得分较高，可能会感到情绪低落、无助、绝望，对生活失去兴趣。这些症状可能会影响您的睡眠、食欲和精力。建议您尝试一些积极的应对策略，如运动、冥想、与亲友交流等，给自己更多的关爱和耐心。"
+            },
+            anxiety: {
+                name: "焦虑",
+                description: "一般指那些烦躁，坐立不安，神经过敏，紧张以及由此产生的躯体征象，如震颤等。测定游离不定的焦虑及惊恐发作是本因子的主要内容，还包括一项解体感受的项目。",
+                low: "您在焦虑方面的得分较低，表明您情绪稳定，能够保持冷静，很少感到紧张或不安。",
+                medium: "您在焦虑方面的得分处于中等水平，可能在面对压力或挑战时会感到一些紧张或不安，但通常能够自我调节。",
+                high: "您在焦虑方面的得分较高，可能会感到紧张、不安、烦躁或担忧。这些症状可能会影响您的睡眠、注意力和日常生活。建议您学习一些放松技巧，如深呼吸、冥想等，为自己创造一个平静的内心环境。"
+            },
+            hostility: {
+                name: "敌对",
+                description: "主要从三方面来反映敌对的表现：思想、感情及行为。其项目包括厌烦的感觉，摔物，争论直到不可控制的脾气暴发等各方面。",
+                low: "您在敌对方面的得分较低，表明您情绪稳定，能够很好地控制自己的情绪，很少感到愤怒或攻击性。",
+                medium: "您在敌对方面的得分处于中等水平，可能偶尔会感到烦躁或不满，但通常能够较好地控制自己的情绪，不会表现出明显的攻击性。",
+                high: "您在敌对方面的得分较高，可能会感到愤怒、烦躁或不满，容易与他人发生冲突。这些情绪可能会影响您的人际关系和生活质量。建议您学习一些情绪管理技巧，如深呼吸、换位思考等，找到健康的方式表达和释放情绪。"
+            },
+            phobic_anxiety: {
+                name: "恐怖",
+                description: "恐惧的对象包括出门旅行，空旷场地，人群或公共场所和交通工具。此外，还有社交恐怖。",
+                low: "您在恐怖方面的得分较低，表明您很少感到恐惧或害怕，能够勇敢面对各种情况和挑战。",
+                medium: "您在恐怖方面的得分处于中等水平，可能对某些特定的场合或事物有轻微的恐惧，但通常不会对您的日常生活造成明显影响。",
+                high: "您在恐怖方面的得分较高，可能对某些特定的场合或事物有明显的恐惧，如高处、封闭空间、人群等。这些恐惧可能会限制您的活动范围，影响您的生活质量。建议您尝试一些自我暴露的方法，逐步面对和克服这些恐惧。"
+            },
+            paranoid_ideation: {
+                name: "偏执",
+                description: "本因子是围绕偏执性思维的基本特征而制订的，主要指投射性思维，敌对，猜疑，关系观念，妄想，被动体验和夸大等。",
+                low: "您在偏执方面的得分较低，表明您信任他人，思维开放，很少怀疑或猜忌他人。",
+                medium: "您在偏执方面的得分处于中等水平，可能偶尔会对他人的动机或意图产生一些怀疑，但通常能够理性看待，不会对您的人际关系造成明显影响。",
+                high: "您在偏执方面的得分较高，可能会怀疑他人的动机或意图，感到自己被监视或迫害。这些想法可能会影响您的人际关系和生活质量。建议您尝试理性思考，多角度看待问题，与亲友保持开放的沟通。"
+            },
+            psychoticism: {
+                name: "精神病性",
+                description: "反映各式各样的急性症状和行为，限定不严的精神病性过程的指征。此外，也可以反映精神病性行为的继发征兆和分裂性生活方式的指征。",
+                low: "您在精神病性方面的得分较低，表明您思维清晰，感知觉正常，能够很好地适应现实生活。",
+                medium: "您在精神病性方面的得分处于中等水平，可能偶尔会有一些不寻常的想法或体验，但通常能够区分现实和想象，不会对您的日常生活造成明显影响。",
+                high: "您在精神病性方面的得分较高，可能会出现一些不寻常的想法或体验。这些体验可能会影响您的思维、情感和行为。建议您关注自己的内心世界，与亲友分享您的感受，给自己更多的理解和接纳。"
+            }
+        };
+
+        // 中国常模标准
+        const chineseNorm = {
+            somatization: { mean: 1.37, sd: 0.48 },
+            obsessive_compulsive: { mean: 1.62, sd: 0.58 },
+            interpersonal_sensitivity: { mean: 1.65, sd: 0.61 },
+            depression: { mean: 1.50, sd: 0.59 },
+            anxiety: { mean: 1.39, sd: 0.43 },
+            hostility: { mean: 1.46, sd: 0.55 },
+            phobic_anxiety: { mean: 1.23, sd: 0.41 },
+            paranoid_ideation: { mean: 1.43, sd: 0.57 },
+            psychoticism: { mean: 1.29, sd: 0.42 }
+        };
+
+        // 建议库
+        const recommendations = {
+            somatization: {
+                low: [
+                    "继续保持良好的生活习惯，如规律作息、均衡饮食和适量运动。",
+                    "定期进行身体检查，预防潜在的健康问题。",
+                    "学习一些放松技巧，如深呼吸、冥想等，帮助缓解日常压力。"
+                ],
+                medium: [
+                    "注意劳逸结合，避免过度劳累。",
+                    "尝试一些放松技巧，如渐进性肌肉松弛、冥想等，帮助缓解身体紧张。",
+                    "保持规律的作息和均衡的饮食，避免过量摄入咖啡因和糖分。",
+                    "适当增加体育锻炼，如散步、瑜伽等，有助于改善身体不适感。"
+                ],
+                high: [
+                    "关注身体发出的信号，学习识别和理解身体不适与情绪状态的关系。",
+                    "学习并练习放松技巧，如深呼吸、冥想、渐进性肌肉松弛等，每天至少进行15-20分钟。",
+                    "保持规律的作息和均衡的饮食，避免过量摄入咖啡因和糖分。",
+                    "适当增加体育锻炼，但避免过度劳累。",
+                    "尝试认知行为疗法的自我应用方法，帮助改变负面的思维模式和行为习惯。",
+                    "如果希望获得更多支持，可以考虑寻求专业人士的帮助，这是对自己心理健康负责的积极选择。"
+                ]
+            },
+            obsessive_compulsive: {
+                low: [
+                    "继续保持开放和灵活的思维方式。",
+                    "培养多样化的兴趣爱好，丰富生活内容。",
+                    "学习时间管理技巧，提高工作和生活效率。"
+                ],
+                medium: [
+                    "尝试接受生活中的不确定性，减少对完美的追求。",
+                    "学习放松技巧，如深呼吸、冥想等，帮助缓解焦虑情绪。",
+                    "当出现重复想法时，尝试转移注意力，如进行体育锻炼、听音乐等。",
+                    "培养自信，相信自己的判断和能力。"
+                ],
+                high: [
+                    "学习并练习正念冥想，帮助提高对当下的觉察和接纳。",
+                    "尝试认知行为疗法中的暴露与反应预防技术，逐步减少强迫行为。",
+                    "设定合理的目标和期望，避免过度追求完美。",
+                    "培养健康的应对机制，如运动、艺术创作等，帮助缓解压力和焦虑。",
+                    "建立支持系统，与亲友分享自己的感受和经历。",
+                    "如果症状严重影响日常生活，建议寻求专业心理咨询或治疗。"
+                ]
+            },
+            interpersonal_sensitivity: {
+                low: [
+                    "继续保持良好的人际交往能力，与他人建立健康的关系。",
+                    "培养同理心，学会从他人的角度思考问题。",
+                    "保持自信，相信自己的价值和能力。"
+                ],
+                medium: [
+                    "学习积极的沟通技巧，如表达自己的需求和感受，倾听他人的意见和想法。",
+                    "参加社交活动，扩大社交圈子，提高社交能力。",
+                    "培养自信，认识并接纳自己的优点和不足。",
+                    "学习放松技巧，如深呼吸、冥想等，帮助缓解社交场合中的紧张情绪。"
+                ],
+                high: [
+                    "学习并练习积极的沟通技巧，如“我”语句、非暴力沟通等。",
+                    "通过书籍、网络课程等资源学习社交技能，提高人际交往能力。",
+                    "进行认知重构，挑战和改变负面的自我评价和人际观念。",
+                    "从小规模、低压力的社交场合开始，逐步提高社交舒适度。",
+                    "建立支持系统，与亲友分享自己的感受和经历。",
+                    "如果希望获得更多支持，可以考虑寻求专业人士的帮助，这是对自己心理健康负责的积极选择。"
+                ]
+            },
+            depression: {
+                low: [
+                    "继续保持积极乐观的生活态度，培养感恩的心态。",
+                    "保持规律的作息和均衡的饮食，确保充足的睡眠。",
+                    "适当增加体育锻炼，如散步、跑步、游泳等，有助于提高情绪。"
+                ],
+                medium: [
+                    "保持规律的作息和均衡的饮食，确保充足的睡眠。",
+                    "适当增加体育锻炼，如散步、跑步、游泳等，每周至少进行3-5次，每次30分钟以上。",
+                    "培养兴趣爱好，参与社交活动，避免孤独和 isolation。",
+                    "学习放松技巧，如深呼吸、冥想等，帮助缓解压力和焦虑。",
+                    "与亲友分享自己的感受和经历，寻求支持和理解。"
+                ],
+                high: [
+                    "保持规律的作息和均衡的饮食，确保充足的睡眠。",
+                    "在身体允许的情况下，适当增加体育锻炼，如散步、跑步、游泳等。",
+                    "建立支持系统，与亲友分享自己的感受和经历，避免孤独和 isolation。",
+                    "学习认知行为疗法技巧，挑战和改变负面的思维模式。",
+                    "设定小目标，逐步恢复日常活动和兴趣爱好。",
+                    "如果感到无法应对，记得你并不孤单，寻求支持是勇敢的表现。"
+                ]
+            },
+            anxiety: {
+                low: [
+                    "继续保持良好的情绪管理能力，学会应对压力和挑战。",
+                    "培养放松技巧，如深呼吸、冥想等，帮助缓解日常压力。",
+                    "保持规律的作息和均衡的饮食，确保充足的睡眠。"
+                ],
+                medium: [
+                    "学习并练习放松技巧，如深呼吸、冥想、渐进性肌肉松弛等，每天至少进行15-20分钟。",
+                    "保持规律的作息和均衡的饮食，避免过量摄入咖啡因和糖分。",
+                    "适当增加体育锻炼，如散步、跑步、游泳等，有助于缓解焦虑情绪。",
+                    "学习时间管理技巧，合理安排工作和生活，避免过度压力。",
+                    "培养积极的应对机制，如问题解决、寻求支持等。"
+                ],
+                high: [
+                    "学习并练习放松技巧，如深呼吸、冥想、渐进性肌肉松弛等，每天至少进行15-20分钟。",
+                    "保持规律的作息和均衡的饮食，避免过量摄入咖啡因和糖分。",
+                    "适当增加体育锻炼，如散步、跑步、游泳等，有助于缓解焦虑情绪。",
+                    "学习认知重构技巧，挑战和改变负面的思维模式和担忧。",
+                    "建立支持系统，与亲友分享自己的感受和经历。",
+                    "如果希望获得更多支持，可以考虑寻求专业人士的帮助，这是对自己心理健康负责的积极选择。"
+                ]
+            },
+            hostility: {
+                low: [
+                    "继续保持良好的情绪管理能力，学会应对压力和挑战。",
+                    "培养积极的沟通技巧，学会表达自己的需求和感受。",
+                    "保持同理心，学会从他人的角度思考问题。"
+                ],
+                medium: [
+                    "学习情绪管理技巧，如深呼吸、数数、暂时离开等，帮助缓解愤怒情绪。",
+                    "培养积极的沟通技巧，学会表达自己的需求和感受，同时尊重他人的意见和想法。",
+                    "学习问题解决技巧，寻找建设性的方式解决冲突和问题。",
+                    "培养同理心，学会从他人的角度思考问题，理解他人的感受和立场。",
+                    "适当增加体育锻炼，如跑步、游泳、拳击等，有助于释放压力和愤怒情绪。"
+                ],
+                high: [
+                    "学习并练习情绪管理技巧，如深呼吸、数数、暂时离开等，在愤怒情绪出现时及时应用。",
+                    "通过书籍、网络课程等资源学习愤怒管理技巧，培养有效的应对策略。",
+                    "培养积极的沟通技巧，学会表达自己的需求和感受，同时尊重他人的意见和想法。",
+                    "学习问题解决技巧，寻找建设性的方式解决冲突和问题。",
+                    "适当增加体育锻炼，如跑步、游泳、拳击等，有助于释放压力和愤怒情绪。",
+                    "如果希望获得更多支持，可以考虑寻求专业人士的帮助，这是对自己心理健康负责的积极选择。"
+                ]
+            },
+            phobic_anxiety: {
+                low: [
+                    "继续保持勇敢和自信的态度，积极面对生活中的挑战。",
+                    "培养多样化的兴趣爱好，丰富生活内容。",
+                    "保持开放的心态，愿意尝试新事物和新体验。"
+                ],
+                medium: [
+                    "学习放松技巧，如深呼吸、冥想等，帮助缓解焦虑情绪。",
+                    "尝试逐步暴露于恐惧的对象或情境中，从低焦虑水平开始，逐步提高。",
+                    "学习认知重构技巧，挑战和改变负面的思维模式和恐惧观念。",
+                    "培养自信，相信自己有能力应对恐惧和挑战。",
+                    "寻求支持，与亲友分享自己的感受和经历，必要时可以寻求他们的陪伴和支持。"
+                ],
+                high: [
+                    "学习并练习放松技巧，如深呼吸、冥想等，在面对恐惧情境时应用。",
+                    "制定一个逐步暴露于恐惧对象或情境的计划，从低焦虑水平开始，逐步提高。",
+                    "学习认知重构技巧，挑战和改变负面的思维模式和恐惧观念。",
+                    "建立支持系统，与亲友分享自己的感受和经历，必要时可以寻求他们的陪伴和支持。",
+                    "通过自助书籍或网络资源学习系统脱敏疗法或暴露疗法的基本原理和方法。",
+                    "如果希望获得更多支持，可以考虑寻求专业人士的帮助，这是对自己心理健康负责的积极选择。"
+                ]
+            },
+            paranoid_ideation: {
+                low: [
+                    "继续保持开放和信任的态度，与他人建立健康的关系。",
+                    "培养同理心，学会从他人的角度思考问题。",
+                    "保持积极的沟通，及时解决误解和冲突。"
+                ],
+                medium: [
+                    "学习理性思考，挑战和验证自己的想法和假设。",
+                    "培养同理心，学会从他人的角度思考问题，理解他人的感受和立场。",
+                    "保持积极的沟通，及时解决误解和冲突，避免猜疑和误解的积累。",
+                    "学习放松技巧，如深呼吸、冥想等，帮助缓解焦虑和紧张情绪。",
+                    "培养自信，相信自己的判断和能力，同时也尊重他人的意见和想法。"
+                ],
+                high: [
+                    "学习理性思考，收集证据支持或反驳自己的想法和假设。",
+                    "保持积极的沟通，及时解决误解和冲突，避免猜疑和误解的积累。",
+                    "培养同理心，学会从他人的角度思考问题，理解他人的感受和立场。",
+                    "建立支持系统，与亲友分享自己的感受和经历，寻求他们的理解和支持。",
+                    "通过自助书籍或网络资源学习认知重构技巧，挑战和改变负面的思维模式。",
+                    "如果希望获得更多支持，可以考虑寻求专业人士的帮助，这是对自己心理健康负责的积极选择。"
+                ]
+            },
+            psychoticism: {
+                low: [
+                    "继续保持良好的现实感和思维能力，积极面对生活。",
+                    "培养健康的生活习惯，如规律作息、均衡饮食和适量运动。",
+                    "保持积极的社交生活，与他人建立良好的关系。"
+                ],
+                medium: [
+                    "保持规律的作息和充足的睡眠，避免过度疲劳和压力。",
+                    "减少或避免使用酒精和其他精神活性物质。",
+                    "保持积极的社交生活，与他人建立良好的关系，避免孤独和 isolation。",
+                    "学习放松技巧，如深呼吸、冥想等，帮助缓解压力和焦虑情绪。",
+                    "如果出现不寻常的想法或体验，尝试与亲友分享，寻求他们的理解和支持。"
+                ],
+                high: [
+                    "保持规律的作息和充足的睡眠，避免过度疲劳和压力。",
+                    "减少或避免使用酒精和其他精神活性物质。",
+                    "在亲友的支持和陪伴下，逐步恢复日常生活和社交活动。",
+                    "关注自己的内心世界，尝试记录和理解自己的想法和感受。",
+                    "与信任的亲友分享自己的体验，寻求他们的理解和支持。",
+                    "如果希望获得更多支持，可以考虑寻求专业人士的帮助，这是对自己心理健康负责的积极选择。"
+                ]
+            }
+        };
+
+        // 总体评估
+        const overallAssessments = {
+            low: "您的总体心理健康状况良好，各项指标均在正常范围内。您可能偶尔会有一些轻微的心理压力或不适感，但这些都在可自我调节的范围内。建议您继续保持积极的生活态度和良好的生活习惯。",
+            medium: "您的总体心理健康状况处于中等水平，可能在某些方面存在一些困扰或不适。这些问题通常不会对您的日常生活造成严重影响，但仍需关注和调整。建议您学习一些心理调适技巧，如放松训练、认知重构等，给自己更多的关爱和照顾。",
+            high: "您的总体心理健康状况可能存在一些问题，多项指标显示您可能正经历较大的心理压力或困扰。这些问题可能已经对您的日常生活、工作或人际关系造成了一定的影响。建议您尝试一些自我帮助的方法，如放松训练、运动、与亲友交流等，给自己更多的耐心和关爱。如果希望获得更多支持，寻求专业人士的帮助也是一个积极的选择。"
+        };
+
+        // 全局变量
+        let currentQuestionIndex = 0;
+        let answers = [];
+        let results = null;
+        let radarChart = null;
+
+        // DOM元素
+        const dateDisplay = document.getElementById('date-display');
+        const startTestBtn = document.getElementById('start-test-btn');
+        const startTestFromInstructionsBtn = document.getElementById('start-test-from-instructions-btn');
+        const questionText = document.getElementById('question-text');
+        const currentQuestionNumber = document.getElementById('current-question-number');
+        const progressBarFill = document.getElementById('progress-bar-fill');
+        const optionCards = document.querySelectorAll('.option-card');
+        const resultDate = document.getElementById('result-date');
+        const totalScore = document.getElementById('total-score');
+        const totalScoreBar = document.getElementById('total-score-bar');
+        const averageScore = document.getElementById('average-score');
+        const averageScoreBar = document.getElementById('average-score-bar');
+        const positiveItems = document.getElementById('positive-items');
+        const positiveItemsBar = document.getElementById('positive-items-bar');
+        const positiveAverage = document.getElementById('positive-average');
+        const positiveAverageBar = document.getElementById('positive-average-bar');
+        const overallAssessment = document.getElementById('overall-assessment');
+        const factorDetails = document.getElementById('factor-details');
+        const recommendationsContainer = document.getElementById('recommendations');
+        const shareResultBtn = document.getElementById('share-result-btn');
+        const restartTestBtn = document.getElementById('restart-test-btn');
+        const viewHistoryResultsBtn = document.getElementById('view-history-results-btn');
+
+        // 页面元素
+        const welcomeSection = document.getElementById('welcome-section');
+        const instructionsSection = document.getElementById('instructions-section');
+        const testSection = document.getElementById('test-section');
+        const resultLoadingSection = document.getElementById('result-loading-section');
+        const resultSection = document.getElementById('result-section');
+        const linkExpiredSection = document.getElementById('link-expired-section');
+
+        // 初始化日期显示
+        function initDateDisplay() {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            dateDisplay.textContent = now.toLocaleDateString('zh-CN', options);
+            resultDate.textContent = now.toLocaleDateString('zh-CN', options);
+        }
+
+        // 检查链接是否有效
+        function checkLinkValidity() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const linkDate = urlParams.get('date');
+            
+            if (!linkDate) {
+                return true; // 如果没有日期参数，默认为有效
+            }
+            
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0].replace(/-/g, '');
+            
+            return linkDate === todayStr;
+        }
+
+        // 显示指定页面
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        // 加载当前问题
+        function loadCurrentQuestion() {
+            const question = questions[currentQuestionIndex];
+            questionText.textContent = `${question.id}. ${question.text}`;
+            currentQuestionNumber.textContent = question.id;
+            
+            // 更新进度条
+            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+            progressBarFill.style.width = `${progress}%`;
+            
+            // 清除之前的选择
+            optionCards.forEach(card => {
+                card.classList.remove('selected');
+                card.querySelector('.option-indicator').classList.add('hidden');
+            });
+            
+            // 如果已经回答过当前问题，显示之前的选择
+            if (answers[currentQuestionIndex] !== undefined) {
+                const selectedScore = answers[currentQuestionIndex];
+                optionCards.forEach(card => {
+                    if (parseInt(card.dataset.score) === selectedScore) {
+                        card.classList.add('selected');
+                        card.querySelector('.option-indicator').classList.remove('hidden');
+                    }
+                });
+            }
+        }
+
+        // 保存答案并前进到下一题
+        function saveAnswer(score) {
+            answers[currentQuestionIndex] = parseInt(score);
+            
+            // 保存到本地存储
+            localStorage.setItem('scl90_answers', JSON.stringify(answers));
+            
+            // 如果是最后一题，显示结果
+            if (currentQuestionIndex === questions.length - 1) {
+                showResultLoading();
+                setTimeout(calculateResults, 1500);
+            } else {
+                // 前进到下一题
+                currentQuestionIndex++;
+                loadCurrentQuestion();
+            }
+        }
+
+        // 显示结果加载页面
+        function showResultLoading() {
+            showSection('result-loading-section');
+        }
+
+        // 计算测试结果
+        function calculateResults() {
+            // 计算总分
+            const totalScore = answers.reduce((sum, score) => sum + score, 0);
+            
+            // 计算总均分
+            const averageScore = totalScore / questions.length;
+            
+            // 计算阳性项目数
+            const positiveItems = answers.filter(score => score > 1).length;
+            
+            // 计算阴性项目数
+            const negativeItems = questions.length - positiveItems;
+            
+            // 计算阳性症状均分
+            const positiveSum = answers.filter(score => score > 1).reduce((sum, score) => sum + score, 0);
+            const positiveAverage = positiveItems > 0 ? positiveSum / positiveItems : 0;
+            
+            // 计算各因子分
+            const factors = {
+                somatization: { sum: 0, count: 0 },
+                obsessive_compulsive: { sum: 0, count: 0 },
+                interpersonal_sensitivity: { sum: 0, count: 0 },
+                depression: { sum: 0, count: 0 },
+                anxiety: { sum: 0, count: 0 },
+                hostility: { sum: 0, count: 0 },
+                phobic_anxiety: { sum: 0, count: 0 },
+                paranoid_ideation: { sum: 0, count: 0 },
+                psychoticism: { sum: 0, count: 0 }
+            };
+            
+            questions.forEach((question, index) => {
+                const factor = question.factor;
+                if (factors[factor]) {
+                    factors[factor].sum += answers[index];
+                    factors[factor].count++;
+                }
+            });
+            
+            const factorScores = {};
+            for (const [key, value] of Object.entries(factors)) {
+                factorScores[key] = value.sum / value.count;
+            }
+            
+            // 确定各因子的严重程度
+            const factorLevels = {};
+            for (const [key, score] of Object.entries(factorScores)) {
+                if (score <= chineseNorm[key].mean + chineseNorm[key].sd) {
+                    factorLevels[key] = 'low';
+                } else if (score <= chineseNorm[key].mean + 2 * chineseNorm[key].sd) {
+                    factorLevels[key] = 'medium';
+                } else {
+                    factorLevels[key] = 'high';
+                }
+            }
+            
+            // 确定总体严重程度
+            let overallLevel = 'low';
+            if (totalScore > 270 || positiveItems > 60 || positiveAverage > 3) {
+                overallLevel = 'high';
+            } else if (totalScore > 160 || positiveItems > 43 || positiveAverage > 2) {
+                overallLevel = 'medium';
+            }
+            
+            // 保存结果
+            results = {
+                totalScore,
+                averageScore,
+                positiveItems,
+                negativeItems,
+                positiveAverage,
+                factorScores,
+                factorLevels,
+                overallLevel,
+                date: new Date().toISOString()
+            };
+            
+            // 保存结果到本地存储
+            const historyResults = JSON.parse(localStorage.getItem('scl90_history_results') || '[]');
+            historyResults.push(results);
+            localStorage.setItem('scl90_history_results', JSON.stringify(historyResults));
+            
+            // 显示结果
+            displayResults();
+        }
+
+        // 显示测试结果
+        function displayResults() {
+            // 更新总体评估
+            totalScore.textContent = results.totalScore;
+            totalScoreBar.style.width = `${((results.totalScore - 90) / 360) * 100}%`;
+            
+            averageScore.textContent = results.averageScore.toFixed(2);
+            averageScoreBar.style.width = `${((results.averageScore - 1) / 4) * 100}%`;
+            
+            positiveItems.textContent = results.positiveItems;
+            positiveItemsBar.style.width = `${(results.positiveItems / 90) * 100}%`;
+            
+            positiveAverage.textContent = results.positiveAverage.toFixed(2);
+            positiveAverageBar.style.width = `${((results.positiveAverage - 1) / 4) * 100}%`;
+            
+            overallAssessment.textContent = overallAssessments[results.overallLevel];
+            
+            // 更新因子分雷达图
+            updateRadarChart();
+            
+            // 更新因子分详细解释
+            updateFactorDetails();
+            
+            // 更新建议
+            updateRecommendations();
+            
+            // 显示结果页面
+            showSection('result-section');
+        }
+
+        // 更新因子分雷达图
+        function updateRadarChart() {
+            const ctx = document.getElementById('radar-chart').getContext('2d');
+            
+            // 销毁之前的图表
+            if (radarChart) {
+                radarChart.destroy();
+            }
+            
+            // 准备数据
+            const labels = Object.values(factorExplanations).map(factor => factor.name);
+            const data = Object.values(results.factorScores);
+            
+            // 创建雷达图
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '因子分',
+                        data: data,
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: [
+                            'rgba(59, 130, 246, 1)',   // 躯体化
+                            'rgba(16, 185, 129, 1)',   // 强迫症状
+                            'rgba(245, 158, 11, 1)',   // 人际关系敏感
+                            'rgba(239, 68, 68, 1)',    // 抑郁
+                            'rgba(139, 92, 246, 1)',   // 焦虑
+                            'rgba(236, 72, 153, 1)',   // 敌对
+                            'rgba(99, 102, 241, 1)',   // 恐怖
+                            'rgba(20, 184, 166, 1)',   // 偏执
+                            'rgba(249, 115, 22, 1)'    // 精神病性
+                        ],
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 5,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // 更新因子分详细解释
+        function updateFactorDetails() {
+            factorDetails.innerHTML = '';
+            
+            for (const [key, factor] of Object.entries(factorExplanations)) {
+                const score = results.factorScores[key].toFixed(2);
+                const level = results.factorLevels[key];
+                const levelText = level === 'low' ? '轻度' : (level === 'medium' ? '中度' : '重度');
+                const levelClass = level === 'low' ? 'low' : (level === 'medium' ? 'medium' : 'high');
+                
+                const factorCard = document.createElement('div');
+                factorCard.className = 'bg-gray-50 rounded-lg p-6 result-card';
+                factorCard.innerHTML = `
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="text-lg font-medium text-gray-800">${factor.name}</h4>
+                        <span class="result-level ${levelClass}">${levelText}</span>
+                    </div>
+                    <div class="mb-4">
+                        <div class="flex justify-between mb-1">
+                            <span class="text-sm font-medium text-gray-600">因子分</span>
+                            <span class="text-sm font-medium text-gray-800">${score}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-bar-fill" style="width: ${((score - 1) / 4) * 100}%; background-color: ${level === 'low' ? '#10B981' : (level === 'medium' ? '#F59E0B' : '#EF4444')};"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>1</span>
+                            <span>3</span>
+                            <span>5</span>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">${factor.description}</p>
+                    <p class="text-sm text-gray-700">${level === 'low' ? factor.low : (level === 'medium' ? factor.medium : factor.high)}</p>
+                `;
+                
+                factorDetails.appendChild(factorCard);
+            }
+        }
+
+        // 更新建议
+        function updateRecommendations() {
+            recommendationsContainer.innerHTML = '';
+            
+            // 根据严重程度排序因子
+            const sortedFactors = Object.entries(results.factorLevels)
+                .sort((a, b) => {
+                    const levelScore = { 'low': 1, 'medium': 2, 'high': 3 };
+                    return levelScore[b[1]] - levelScore[a[1]];
+                })
+                .slice(0, 3); // 只显示前3个最严重的因子
+            
+            // 添加总体建议
+            const overallRecommendation = document.createElement('div');
+            overallRecommendation.className = 'mb-6';
+            overallRecommendation.innerHTML = `
+                <h4 class="text-lg font-medium text-gray-800 mb-3">总体建议</h4>
+                <div class="space-y-3">
+                    ${results.overallLevel === 'low' ? `
+                        <div class="recommendation-item">
+                            <i class="fa fa-check-circle"></i>
+                            <span>继续保持积极乐观的生活态度，定期进行自我心理评估。</span>
+                        </div>
+                        <div class="recommendation-item">
+                            <i class="fa fa-check-circle"></i>
+                            <span>培养健康的生活习惯，如规律作息、均衡饮食和适量运动。</span>
+                        </div>
+                        <div class="recommendation-item">
+                            <i class="fa fa-check-circle"></i>
+                            <span>保持良好的人际关系，与亲友保持密切联系。</span>
+                        </div>
+                    ` : results.overallLevel === 'medium' ? `
+                        <div class="recommendation-item">
+                            <i class="fa fa-exclamation-circle"></i>
+                            <span>关注自己的情绪变化，学习一些简单的心理调适技巧。</span>
+                        </div>
+                        <div class="recommendation-item">
+                            <i class="fa fa-exclamation-circle"></i>
+                            <span>适当增加社交活动，扩大社交圈子，避免孤独。</span>
+                        </div>
+                        <div class="recommendation-item">
+                            <i class="fa fa-exclamation-circle"></i>
+                            <span>如果症状持续或加重，建议寻求专业心理咨询。</span>
+                        </div>
+                    ` : `
+                        <div class="recommendation-item">
+                            <i class="fa fa-exclamation-triangle"></i>
+                            <span>**关注自己的心理健康，给自己更多的关爱和照顾。**</span>
+                        </div>
+                        <div class="recommendation-item">
+                            <i class="fa fa-exclamation-triangle"></i>
+                            <span>与亲友分享自己的感受和经历，寻求他们的支持和理解。</span>
+                        </div>
+                        <div class="recommendation-item">
+                            <i class="fa fa-exclamation-triangle"></i>
+                            <span>保持规律的作息和生活习惯，避免过度疲劳和压力。</span>
+                        </div>
+                    `}
+                </div>
+            `;
+            recommendationsContainer.appendChild(overallRecommendation);
+            
+            // 添加针对各因子的建议
+            sortedFactors.forEach(([factorKey, level]) => {
+                const factor = factorExplanations[factorKey];
+                const factorRecs = recommendations[factorKey][level];
+                
+                const factorRecommendation = document.createElement('div');
+                factorRecommendation.className = 'mb-6';
+                factorRecommendation.innerHTML = `
+                    <h4 class="text-lg font-medium text-gray-800 mb-3">针对${factor.name}的建议</h4>
+                    <div class="space-y-3">
+                        ${factorRecs.map(rec => `
+                            <div class="recommendation-item">
+                                <i class="fa fa-${level === 'low' ? 'check' : (level === 'medium' ? 'exclamation' : 'exclamation-triangle')}-circle"></i>
+                                <span>${rec}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                recommendationsContainer.appendChild(factorRecommendation);
+            });
+            
+            // 添加通用建议
+            const generalRecommendation = document.createElement('div');
+            generalRecommendation.innerHTML = `
+                <h4 class="text-lg font-medium text-gray-800 mb-3">通用建议</h4>
+                <div class="space-y-3">
+                    <div class="recommendation-item">
+                        <i class="fa fa-heart"></i>
+                        <span>保持积极乐观的心态，学会感恩和珍惜生活中的美好事物。</span>
+                    </div>
+                    <div class="recommendation-item">
+                        <i class="fa fa-bed"></i>
+                        <span>保证充足的睡眠，每晚7-8小时，有助于身体和心理的恢复。</span>
+                    </div>
+                    <div class="recommendation-item">
+                        <i class="fa fa-cutlery"></i>
+                        <span>保持均衡的饮食，多吃蔬菜水果，减少咖啡因和糖分的摄入。</span>
+                    </div>
+                    <div class="recommendation-item">
+                        <i class="fa fa-bicycle"></i>
+                        <span>定期进行体育锻炼，如散步、跑步、游泳、瑜伽等，有助于缓解压力和焦虑。</span>
+                    </div>
+                    <div class="recommendation-item">
+                        <i class="fa fa-users"></i>
+                        <span>保持良好的人际关系，与亲友保持密切联系，寻求支持和理解。</span>
+                    </div>
+                </div>
+            `;
+            
+            recommendationsContainer.appendChild(generalRecommendation);
+        }
+
+        // 分享结果
+        function shareResult() {
+            alert('分享功能即将上线，敬请期待！');
+        }
+
+        // 重新测试
+        function restartTest() {
+            currentQuestionIndex = 0;
+            answers = [];
+            localStorage.removeItem('scl90_answers');
+            loadCurrentQuestion();
+            showSection('welcome-section');
+        }
+
+        // 查看历史测试结果
+        function viewHistoryResults() {
+            const historyResults = JSON.parse(localStorage.getItem('scl90_history_results') || '[]');
+            
+            if (historyResults.length === 0) {
+                alert('暂无历史测试结果！');
+                return;
+            }
+            
+            // 显示最近的测试结果
+            results = historyResults[historyResults.length - 1];
+            displayResults();
+        }
+
+        // 初始化
+        function init() {
+            // 初始化日期显示
+            initDateDisplay();
+            
+            // 检查链接是否有效
+            const isLinkValid = checkLinkValidity();
+            
+            if (!isLinkValid) {
+                showSection('link-expired-section');
+                return;
+            }
+            
+            // 检查是否有保存的答案
+            const savedAnswers = localStorage.getItem('scl90_answers');
+            if (savedAnswers) {
+                answers = JSON.parse(savedAnswers);
+                currentQuestionIndex = answers.findIndex(answer => answer === undefined);
+                
+                // 如果所有问题都已回答，显示结果
+                if (currentQuestionIndex === -1) {
+                    const historyResults = JSON.parse(localStorage.getItem('scl90_history_results') || '[]');
+                    if (historyResults.length > 0) {
+                        results = historyResults[historyResults.length - 1];
+                        displayResults();
+                        return;
+                    }
+                } else if (currentQuestionIndex === 0) {
+                    // 如果没有回答任何问题，重置
+                    answers = [];
+                }
+            }
+            
+            // 绑定事件
+            startTestBtn.addEventListener('click', () => showSection('instructions-section'));
+            startTestFromInstructionsBtn.addEventListener('click', () => {
+                loadCurrentQuestion();
+                showSection('test-section');
+            });
+            
+            optionCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    // 选中当前选项
+                    optionCards.forEach(c => {
+                        c.classList.remove('selected');
+                        c.querySelector('.option-indicator').classList.add('hidden');
+                    });
+                    card.classList.add('selected');
+                    card.querySelector('.option-indicator').classList.remove('hidden');
+                    
+                    // 保存答案并前进到下一题
+                    setTimeout(() => saveAnswer(card.dataset.score), 500);
+                });
+            });
+            
+            shareResultBtn.addEventListener('click', shareResult);
+            restartTestBtn.addEventListener('click', restartTest);
+            viewHistoryResultsBtn.addEventListener('click', viewHistoryResults);
+            
+            // 显示欢迎页面
+            showSection('welcome-section');
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
