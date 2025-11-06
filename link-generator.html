@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>每日链接生成器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .link-box {
+            background-color: #f0f0f0;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            word-break: break-all;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>今日测试链接</h1>
+    <div class="link-box">
+        <p>今日链接：<a id="today-link" href="#" target="_blank"></a></p>
+    </div>
+    <button onclick="copyLink()">复制链接</button>
+    <p id="copy-message"></p>
+    
+    <script>
+        // 请将下面的链接替换为您自己的基础链接
+        const baseUrl = " https://li-chenzhou2.github.io/SCL-90TestWebSite/";
+        
+        // 获取今天的日期
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const dateStr = `${year}${month}${day}`;
+        
+        // 生成今日链接
+        const todayLink = `${baseUrl}?date=${dateStr}`;
+        
+        // 显示链接
+        const linkElement = document.getElementById('today-link');
+        linkElement.href = todayLink;
+        linkElement.textContent = todayLink;
+        
+        // 复制链接功能
+        function copyLink() {
+            const copyText = document.getElementById("today-link").textContent;
+            navigator.clipboard.writeText(copyText).then(() => {
+                const messageElement = document.getElementById('copy-message');
+                messageElement.textContent = "链接已复制到剪贴板！";
+                setTimeout(() => {
+                    messageElement.textContent = "";
+                }, 3000);
+            });
+        }
+    </script>
+</body>
+</html>
