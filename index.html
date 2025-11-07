@@ -1004,10 +1004,18 @@
 
         // 初始化日期显示
         function initDateDisplay() {
-            const now = new Date();
+            const now = getBeijingTime();
             const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
             dateDisplay.textContent = now.toLocaleDateString('zh-CN', options);
             resultDate.textContent = now.toLocaleDateString('zh-CN', options);
+        }
+
+        // 获取当前北京时间
+        function getBeijingTime() {
+            const now = new Date();
+            const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const beijingTime = new Date(utcTime + (8 * 60 * 60000));
+            return beijingTime;
         }
 
         // 检查链接是否有效
@@ -1019,8 +1027,17 @@
                 return true; // 如果没有日期参数，默认为有效
             }
             
-            const today = new Date();
+            // 严格验证日期格式
+            if (!/^\d{8}$/.test(linkDate)) {
+                console.log('日期格式无效:', linkDate);
+                return false;
+            }
+            
+            const today = getBeijingTime();
             const todayStr = today.toISOString().split('T')[0].replace(/-/g, '');
+            
+            console.log('链接日期:', linkDate);
+            console.log('北京时间:', todayStr);
             
             return linkDate === todayStr;
         }
@@ -1504,8 +1521,28 @@
             showSection('welcome-section');
         }
 
+        // 自动更新机制
+        function setupAutoRefresh() {
+            const now = getBeijingTime();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            
+            // 如果当前时间在23:55-23:59之间，设置自动刷新
+            if (hours === 23 && minutes >= 55) {
+                const secondsUntilMidnight = (60 - minutes) * 60 - now.getSeconds() + 1;
+                console.log(`将在 ${secondsUntilMidnight} 秒后自动刷新页面`);
+                
+                setTimeout(() => {
+                    window.location.reload();
+                }, secondsUntilMidnight * 1000);
+            }
+        }
+
         // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('DOMContentLoaded', function() {
+            init();
+            setupAutoRefresh();
+        });
     </script>
 </body>
 </html>

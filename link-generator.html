@@ -1,71 +1,423 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <title>每日链接生成器</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCL-90测试链接生成器</title>
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 统一的 Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#8B5CF6',
+                        light: '#EFF6FF',
+                        dark: '#1F2937',
+                        'primary-light': '#93C5FD',
+                        'secondary-light': '#A7F3D0',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.5s ease-in-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .bg-gradient-custom {
+                background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+            }
+            .card-shadow {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .transition-custom {
+                transition: all 0.3s ease;
+            }
+            .btn-hover:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+            }
+        }
+    </style>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            text-align: center;
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: #f8fafc;
         }
-        .link-box {
-            background-color: #f0f0f0;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 5px;
-            word-break: break-all;
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
         }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
+        .section.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .copy-success {
+            animation: copySuccess 1s ease-in-out;
+        }
+        @keyframes copySuccess {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
     </style>
 </head>
-<body>
-    <h1>今日测试链接</h1>
-    <div class="link-box">
-        <p>今日链接：<a id="today-link" href="#" target="_blank"></a></p>
+<body class="bg-gray-50 min-h-screen">
+    <div class="min-h-screen flex flex-col">
+        <!-- 顶部导航 -->
+        <header class="bg-white shadow-sm">
+            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+                <div class="flex items-center">
+                    <i class="fa fa-link text-primary text-2xl mr-2"></i>
+                    <h1 class="text-xl font-bold text-gray-800">SCL-90测试链接生成器</h1>
+                </div>
+                <div id="date-display" class="text-sm text-gray-500"></div>
+            </div>
+        </header>
+
+        <!-- 主内容区 -->
+        <main class="flex-grow container mx-auto px-4 py-8">
+            <!-- 链接生成页面 -->
+            <section id="generator-section" class="section active">
+                <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 text-white">
+                        <h2 class="text-2xl font-bold mb-2">测试链接生成器</h2>
+                        <p class="text-blue-100">生成带有日期参数的SCL-90测试链接</p>
+                    </div>
+                    
+                    <div class="p-8">
+                        <div class="mb-8">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">生成今日测试链接</h3>
+                            
+                            <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">选择日期</label>
+                                    <input type="date" id="date-picker" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary">
+                                </div>
+                                
+                                <div class="mb-6">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">生成的链接</label>
+                                    <div class="flex">
+                                        <input type="text" id="generated-link" class="flex-grow px-4 py-2 border border-gray-300 rounded-l-md focus:ring-primary focus:border-primary" readonly>
+                                        <button id="copy-link-btn" class="bg-primary hover:bg-blue-600 text-white px-4 py-2 rounded-r-md transition-custom btn-hover">
+                                            <i class="fa fa-copy"></i>
+                                        </button>
+                                    </div>
+                                    <p class="mt-2 text-xs text-gray-500">
+                                        此链接将包含所选日期参数，仅在该日期当天有效。
+                                    </p>
+                                </div>
+                                
+                                <div class="flex justify-end">
+                                    <button id="generate-link-btn" class="bg-primary hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-lg transition-custom btn-hover">
+                                        生成链接
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-blue-50 border-l-4 border-blue-500 p-4">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <i class="fa fa-info-circle text-blue-500"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm text-blue-700">
+                                            链接使用说明：生成的链接包含日期参数，仅在该日期当天有效。用户访问链接时，系统会检查日期是否匹配，不匹配则显示链接过期页面。
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">批量生成链接</h3>
+                            
+                            <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">开始日期</label>
+                                    <input type="date" id="start-date" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary">
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">结束日期</label>
+                                    <input type="date" id="end-date" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary">
+                                </div>
+                                
+                                <div class="mb-6">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">批量生成结果</label>
+                                    <div class="max-h-60 overflow-y-auto border border-gray-300 rounded-md p-4 bg-white">
+                                        <ul id="batch-links-list" class="space-y-2 text-sm">
+                                            <!-- 批量生成的链接将显示在这里 -->
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex justify-end">
+                                    <button id="batch-generate-btn" class="bg-secondary hover:bg-green-600 text-white font-medium py-2 px-6 rounded-lg transition-custom btn-hover mr-3">
+                                        批量生成
+                                    </button>
+                                    <button id="export-links-btn" class="bg-accent hover:bg-purple-600 text-white font-medium py-2 px-6 rounded-lg transition-custom btn-hover" disabled>
+                                        <i class="fa fa-download mr-1"></i> 导出链接
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="bg-white border-t border-gray-200 py-6">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="text-sm text-gray-500 mb-4 md:mb-0">
+                        © 2025 心理健康测评 | SCL-90症状自评量表
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        <p>本网页内容仅供参考，不构成任何医疗建议</p>
+                        <p class="mt-1">SCL-90量表版权归原作者所有</p>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-100 text-center text-xs text-gray-500">
+                    <p>© 2025 版权所有</p>
+                    <p class="mt-1">使用说明：本工具仅供管理员使用，禁止用于商业用途</p>
+                </div>
+            </div>
+        </footer>
     </div>
-    <button onclick="copyLink()">复制链接</button>
-    <p id="copy-message"></p>
-    
+
     <script>
-        // 请将下面的链接替换为您自己的基础链接
-        const baseUrl = " https://li-chenzhou2.github.io/SCL-90TestWebSite/";
-        
-        // 获取今天的日期
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        const dateStr = `${year}${month}${day}`;
-        
-        // 生成今日链接
-        const todayLink = `${baseUrl}?date=${dateStr}`;
-        
-        // 显示链接
-        const linkElement = document.getElementById('today-link');
-        linkElement.href = todayLink;
-        linkElement.textContent = todayLink;
-        
-        // 复制链接功能
-        function copyLink() {
-            const copyText = document.getElementById("today-link").textContent;
-            navigator.clipboard.writeText(copyText).then(() => {
-                const messageElement = document.getElementById('copy-message');
-                messageElement.textContent = "链接已复制到剪贴板！";
+        // DOM元素
+        const dateDisplay = document.getElementById('date-display');
+        const datePicker = document.getElementById('date-picker');
+        const generatedLink = document.getElementById('generated-link');
+        const copyLinkBtn = document.getElementById('copy-link-btn');
+        const generateLinkBtn = document.getElementById('generate-link-btn');
+        const startDate = document.getElementById('start-date');
+        const endDate = document.getElementById('end-date');
+        const batchGenerateBtn = document.getElementById('batch-generate-btn');
+        const exportLinksBtn = document.getElementById('export-links-btn');
+        const batchLinksList = document.getElementById('batch-links-list');
+
+        // 获取当前北京时间
+        function getBeijingTime() {
+            const now = new Date();
+            const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const beijingTime = new Date(utcTime + (8 * 60 * 60000));
+            return beijingTime;
+        }
+
+        // 初始化日期显示
+        function initDateDisplay() {
+            const now = getBeijingTime();
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            dateDisplay.textContent = now.toLocaleDateString('zh-CN', options);
+            
+            // 设置默认日期为今天
+            const today = now.toISOString().split('T')[0];
+            datePicker.value = today;
+            startDate.value = today;
+            
+            // 设置默认结束日期为7天后
+            const nextWeek = new Date(now);
+            nextWeek.setDate(now.getDate() + 7);
+            endDate.value = nextWeek.toISOString().split('T')[0];
+        }
+
+        // 生成测试链接
+        function generateTestLink(date) {
+            const baseUrl = window.location.origin + window.location.pathname.replace('link-generator.html', 'index.html');
+            const dateParam = date.replace(/-/g, '');
+            return `${baseUrl}?date=${dateParam}`;
+        }
+
+        // 复制链接到剪贴板
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // 显示复制成功动画
+                copyLinkBtn.innerHTML = '<i class="fa fa-check"></i>';
+                copyLinkBtn.classList.add('copy-success');
+                
                 setTimeout(() => {
-                    messageElement.textContent = "";
-                }, 3000);
+                    copyLinkBtn.innerHTML = '<i class="fa fa-copy"></i>';
+                    copyLinkBtn.classList.remove('copy-success');
+                }, 1000);
             });
         }
+
+        // 批量生成链接
+        function batchGenerateLinks(startDate, endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            
+            if (start > end) {
+                alert('开始日期不能晚于结束日期！');
+                return;
+            }
+            
+            // 清空之前的结果
+            batchLinksList.innerHTML = '';
+            
+            // 生成日期范围内的所有链接
+            const links = [];
+            const currentDate = new Date(start);
+            
+            while (currentDate <= end) {
+                const dateStr = currentDate.toISOString().split('T')[0];
+                const link = generateTestLink(dateStr);
+                
+                // 添加到列表
+                const listItem = document.createElement('li');
+                listItem.className = 'flex justify-between items-center';
+                listItem.innerHTML = `
+                    <span>${dateStr}</span>
+                    <div class="flex items-center">
+                        <input type="text" value="${link}" class="w-64 px-2 py-1 text-xs border border-gray-300 rounded mr-2" readonly>
+                        <button class="copy-batch-link text-primary hover:text-blue-700" data-link="${link}">
+                            <i class="fa fa-copy text-xs"></i>
+                        </button>
+                    </div>
+                `;
+                batchLinksList.appendChild(listItem);
+                
+                // 添加到链接数组
+                links.push({
+                    date: dateStr,
+                    link: link
+                });
+                
+                // 移动到下一天
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            // 绑定批量复制按钮事件
+            document.querySelectorAll('.copy-batch-link').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const link = this.getAttribute('data-link');
+                    copyToClipboard(link);
+                    
+                    // 显示复制成功动画
+                    this.innerHTML = '<i class="fa fa-check text-xs"></i>';
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fa fa-copy text-xs"></i>';
+                    }, 1000);
+                });
+            });
+            
+            // 启用导出按钮
+            exportLinksBtn.disabled = false;
+            
+            // 保存链接到全局变量，以便导出
+            window.batchGeneratedLinks = links;
+        }
+
+        // 导出链接为CSV
+        function exportLinksToCSV() {
+            if (!window.batchGeneratedLinks || window.batchGeneratedLinks.length === 0) {
+                alert('没有可导出的链接！');
+                return;
+            }
+            
+            // 创建CSV内容
+            let csvContent = "日期,链接\n";
+            window.batchGeneratedLinks.forEach(item => {
+                csvContent += `${item.date},${item.link}\n`;
+            });
+            
+            // 创建Blob对象
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            
+            // 创建下载链接
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `scl90_test_links_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            
+            // 添加到DOM并触发点击
+            document.body.appendChild(link);
+            link.click();
+            
+            // 清理
+            document.body.removeChild(link);
+        }
+
+        // 初始化
+        function init() {
+            // 初始化日期显示
+            initDateDisplay();
+            
+            // 绑定事件
+            generateLinkBtn.addEventListener('click', () => {
+                const date = datePicker.value;
+                if (!date) {
+                    alert('请选择日期！');
+                    return;
+                }
+                
+                const link = generateTestLink(date);
+                generatedLink.value = link;
+            });
+            
+            copyLinkBtn.addEventListener('click', () => {
+                const link = generatedLink.value;
+                if (!link) {
+                    alert('请先生成链接！');
+                    return;
+                }
+                
+                copyToClipboard(link);
+            });
+            
+            batchGenerateBtn.addEventListener('click', () => {
+                const start = startDate.value;
+                const end = endDate.value;
+                
+                if (!start || !end) {
+                    alert('请选择开始和结束日期！');
+                    return;
+                }
+                
+                batchGenerateLinks(start, end);
+            });
+            
+            exportLinksBtn.addEventListener('click', exportLinksToCSV);
+            
+            // 生成今天的链接
+            const today = getBeijingTime().toISOString().split('T')[0];
+            generatedLink.value = generateTestLink(today);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
