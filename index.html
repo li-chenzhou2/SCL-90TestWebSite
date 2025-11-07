@@ -1495,6 +1495,20 @@
                 }
             }
             
+            // 检查URL中是否有日期参数
+            const urlParams = new URLSearchParams(window.location.search);
+            const linkDate = urlParams.get('date');
+            
+            // 如果有日期参数，清除之前的答案（允许重新测试）
+            if (linkDate) {
+                answers = [];
+                localStorage.removeItem('scl90_answers');
+                currentQuestionIndex = 0;
+                
+                // 即使有历史结果，也允许开始新测试
+                results = null;
+            }
+            
             // 绑定事件
             startTestBtn.addEventListener('click', () => showSection('instructions-section'));
             startTestFromInstructionsBtn.addEventListener('click', () => {
@@ -1550,4 +1564,5 @@
     </script>
 </body>
 </html>
+
 
